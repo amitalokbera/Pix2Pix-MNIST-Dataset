@@ -8,10 +8,8 @@ from typing import List, Tuple
 from tqdm import tqdm
 from joblib import Parallel, delayed
 
-os.makedirs(os.path.join('dataset', 'train','input'), exist_ok=True)
-os.makedirs(os.path.join('dataset', 'train','output'), exist_ok=True)
-os.makedirs(os.path.join('dataset', 'test','input'), exist_ok=True)
-os.makedirs(os.path.join('dataset', 'test','output'), exist_ok=True)
+os.makedirs(os.path.join('dataset', 'train'), exist_ok=True)
+os.makedirs(os.path.join('dataset', 'test'), exist_ok=True)
 
 def pixel_fixer_thresh(img, threshold):
     new_image = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
@@ -90,10 +88,10 @@ def generate_image(image, imsize,fname, dtype='train'):
     digit = cv2.Canny(image=digit, threshold1=1, threshold2=1, apertureSize=5, L2gradient=True)
     input_image = noise_image(digit,imsize)
     input_image = pixel_fixer_thresh(input_image,2)
-    input_path = os.path.join('dataset', dtype, 'input', f'{fname}.png')
-    output_path = os.path.join('dataset', dtype, 'output', f'{fname}.png')
-    cv2.imwrite(input_path, input_image)
-    cv2.imwrite(output_path, output_image)
+    savepath = os.path.join('dataset', dtype, f'{fname}.png')
+    #merge both the input and output image 
+    merged_image = np.concatenate((input_image, output_image), axis=1)
+    cv2.imwrite(savepath, merged_image)
 
 
 
