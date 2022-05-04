@@ -1,3 +1,4 @@
+#Importing all the libraries
 from tensorflow.keras.datasets.mnist import load_data
 import cv2 
 import numpy as np
@@ -8,9 +9,12 @@ from typing import List, Tuple
 from tqdm import tqdm
 from joblib import Parallel, delayed
 
+#Creatingg folders to store data
 os.makedirs(os.path.join('dataset', 'train'), exist_ok=True)
 os.makedirs(os.path.join('dataset', 'test'), exist_ok=True)
 
+#This function is used to fix the pixel values of the image
+#It converts all the pixel values to either 0 or 255 i.e perfect black or white
 def pixel_fixer_thresh(img, threshold):
     new_image = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
     all_black_pixels = np.where(img < threshold)
@@ -19,44 +23,7 @@ def pixel_fixer_thresh(img, threshold):
     new_image[all_white_pixels] = 255
     return new_image
 
-def random_angle_steps(steps: int, irregularity: float) -> List[float]:
-    angles = []
-    lower = (2 * math.pi / steps) - irregularity
-    upper = (2 * math.pi / steps) + irregularity
-    cumsum = 0
-    for i in range(steps):
-        angle = random.uniform(lower, upper)
-        angles.append(angle)
-        cumsum += angle
-    cumsum /= (2 * math.pi)
-    for i in range(steps):
-        angles[i] /= cumsum
-    return angles
-
-def clip(value, lower, upper):
-    return min(upper, max(value, lower))
-
-def generate_polygon(center: Tuple[float, float], avg_radius: float,
-                     irregularity: float, spikiness: float,
-                     num_vertices: int) -> List[Tuple[float, float]]:
-    if irregularity < 0 or irregularity > 1:
-        raise ValueError("Irregularity must be between 0 and 1.")
-    if spikiness < 0 or spikiness > 1:
-        raise ValueError("Spikiness must be between 0 and 1.")
-    irregularity *= 2 * math.pi / num_vertices
-    spikiness *= avg_radius
-    angle_steps = random_angle_steps(num_vertices, irregularity)
-    points = []
-    angle = random.uniform(0, 2 * math.pi)
-    for i in range(num_vertices):
-        radius = clip(random.gauss(avg_radius, spikiness), 0, 2 * avg_radius)
-        point = (center[0] + radius * math.cos(angle),
-                 center[1] + radius * math.sin(angle))
-        points.append(point)
-        angle += angle_steps[i]
-
-    return points
-
+#Generate random lines on the input images
 def noise_image(blank_image,img_size):
     for _ in range(random.randint(5,12)):
         pt1 = (random.randint(0, img_size), random.randint(0, img_size))
@@ -65,6 +32,7 @@ def noise_image(blank_image,img_size):
     blank_image = pixel_fixer_thresh(blank_image,2)
     return blank_image
     
+#Resize images without loosing the aspect ratio
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     dim = None
     (h, w) = image.shape[:2]
@@ -79,6 +47,7 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     resized = cv2.resize(image, dim, interpolation = inter)
     return resized
 
+#This function is used to generate the dataset
 def generate_image(image, imsize,fname, dtype='train'):
     digit = image.astype(np.float32)
     digit = image_resize(digit, width=imsize, height=imsize)
@@ -102,7 +71,9 @@ if __name__ == "__main__":
     parser.add_argument('--image_size', type=int, default=64)
     parser.add_argument('--num_workers', type=int, default=-1)
     args = parser.parse_args()
+    #Loading the MNIST dataset from TF2 library
     (x_train, y_train), (x_test, y_test) = load_data()
+    #Multiprocessing the dataset generation of training and testing dataset
     _ = Parallel(n_jobs=args.num_workers)(delayed(generate_image)(x_train[i], args.image_size, str(i), 'train') for i in tqdm(range(args.dataset_size)))
     test_size = int(args.dataset_size * 0.1)
     _ = Parallel(n_jobs=args.num_workers)(delayed(generate_image)(x_test[i], args.image_size, str(i), 'test') for i in tqdm(range(test_size)))
