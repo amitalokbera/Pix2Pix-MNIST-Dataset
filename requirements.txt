@@ -1,0 +1,5 @@
+joblib==1.1.0
+numpy==1.22.3
+opencv_contrib_python==4.5.5.64
+tensorflow==2.8.0
+tqdm==4.64.0
