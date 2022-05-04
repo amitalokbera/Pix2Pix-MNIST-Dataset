@@ -2,6 +2,8 @@
 
 This scripts create custom MNIST Dataset which can be used to trained Pix2Pix GAN model from scratch.
 
+![mnist_image](https://i.imgur.com/4AQO0rN.png)
+
 ## Installtion
 
 Install all the required libraries from requirements.txt file
@@ -16,6 +18,7 @@ Will automatically installed all the required libraries
 ```python
 python3 generate_dataset.py --dataset_size 10000 --image_size 64
 ```
-- This will generate custom MNIST dataset inside dataset folder
+- dataset_size = No. of images to be generated
+- image_size = Set Image resolution
 
-- It will also generate test dataset, i.e 10% of training size
+This will generate custom MNIST dataset inside dataset folder. It will also generate test dataset, i.e 10% of training size
