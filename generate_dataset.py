@@ -83,7 +83,7 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
 
 def generate_image(image, imsize,fname, dtype='train'):
     digit = image.astype(np.float32)
-    digit = image_resize(digit, width=64, height=64)
+    digit = image_resize(digit, width=imsize, height=imsize)
     digit = digit.astype(np.uint8)
     digit = pixel_fixer_thresh(digit,2)
     output_image  = digit.copy()
